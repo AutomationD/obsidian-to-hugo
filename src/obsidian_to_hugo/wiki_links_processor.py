@@ -18,7 +18,7 @@ def get_wiki_links(text: str) -> List[WikiLink]:
     - text: the possible extracted text
     """
     wiki_links = []
-    wiki_link_regex = r"\[\[(.*?)\]\]"
+    wiki_link_regex = r"\!?\[\[(.*?)\]\]"
     for match in re.finditer(wiki_link_regex, text):
         out = {
             "wiki_link": match.group(),
@@ -53,7 +53,15 @@ def wiki_link_to_hugo_link(wiki_link: WikiLink) -> str:
         )
     else:
         link_combined = wiki_link["link"]
-    hugo_link = f'[{wiki_link["text"]}]({{{{< ref "{link_combined}" >}}}})'
+
+    # Process image links too
+    if wiki_link["wiki_link"].startswith("!"):
+        # check if the wiki_link has text in a lambda and assign it to caption:
+        caption_tag = f'caption="{wiki_link["text"]}"' if "text" in wiki_link else ""
+        hugo_link = f'{{{{< figure src="{link_combined}" {caption_tag} >}}}}'
+    else:
+        hugo_link = f'[{wiki_link["text"]}]({{{{< ref "{link_combined}" >}}}})'
+
     return hugo_link
 
 
