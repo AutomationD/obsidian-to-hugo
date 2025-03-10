@@ -1,0 +1,37 @@
+name: PR Workflow
+
+on:
+  pull_request:
+    branches:
+      - '*'
+  workflow_dispatch:
+
+
+jobs:
+  tests:
+    name: Tests (python v${{ matrix.python_version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python_version:
+        - "3.9"
+        - "3.10"
+        - "3.11"
+        - "3.12"
+        - "3.13"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # TODO likely should be done via uv and pyproject.toml
+      - name: Set up Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v4
+        with:
+          python_version: ${{ matrix.python_version }}
+
+      - name: Run tests
+        run: |
+          touch .env # needed for minimal intrusion into the original Makefile
+          make test

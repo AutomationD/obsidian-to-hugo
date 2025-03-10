@@ -49,6 +49,12 @@ class WikiLinksProcessorTestCase(unittest.TestCase):
         hugo_link = wiki_links_processor.wiki_link_to_hugo_link(wiki_link)
         self.assertEqual(hugo_link, '[baz]({{< ref "bar#foo-bar" >}})')
 
+    def test_convert_wiki_link_with_image_link(self):
+        wiki_link = wiki_links_processor.get_wiki_links("![[../_media/foo-bar.png|foo-bar 🙂]]")[0]
+        hugo_link = wiki_links_processor.wiki_link_to_hugo_link(wiki_link)
+        self.assertEqual(hugo_link, '{{< figure src="../_media/foo-bar.png" caption="foo-bar 🙂" >}}')
+
+
     def test_replace_wiki_links(self):
         real_in = """
         [[foo]]
@@ -56,6 +62,7 @@ class WikiLinksProcessorTestCase(unittest.TestCase):
         [[bar\|baz]]
         [[bar/_index|baz]]
         [[bar#Foo Bar|baz]]
+        ![[../_media/foo-bar.png|foo-bar 🙂]]
         """
         expected_out = """
         [foo]({{< ref "foo" >}})
@@ -63,6 +70,7 @@ class WikiLinksProcessorTestCase(unittest.TestCase):
         [baz]({{< ref "bar" >}})
         [baz]({{< ref "bar/" >}})
         [baz]({{< ref "bar#foo-bar" >}})
+        {{< figure src="../_media/foo-bar.png" caption="foo-bar 🙂" >}}
         """
         real_out = wiki_links_processor.replace_wiki_links(real_in)
         self.assertEqual(real_out, expected_out)
